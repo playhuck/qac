@@ -17,13 +17,11 @@ import {
 @Injectable()
 export class JwtUserGuard implements CanActivate {
     constructor(
-        private jwt: JwtProvider,
-        // private readonly userRepo: UserRepository
+        private jwt: JwtProvider
     ) { }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request: Request = await context.switchToHttp().getRequest();
-        const response: Response = await context.switchToHttp().getResponse();
         
         const token = this.extractTokenFromHeader(request);
         if (!token) {
@@ -42,17 +40,6 @@ export class JwtUserGuard implements CanActivate {
                 401
             )
         };
-
-        // const user = await this.userRepo.getUserById(payload['userId']);
-        // if (!user) {
-        //     throw new CustomException(
-        //         "존재하지 않는 유저입니다.",
-        //         ECustomExceptionCode["USER-002"],
-        //         401
-        //     )
-        // };
-
-        // response["user"] = user as IUser;
 
         return true;
     };

@@ -3,6 +3,7 @@ import { Repository, DataSource, EntityManager } from "typeorm";
 
 import { UserEntity } from "@entities/user.entity";
 import { InjectRepository } from "@nestjs/typeorm";
+import { PostSignUpDto } from "@dtos/users/post.sign.up.dto";
 
 @Injectable()
 export class UserRepository {
@@ -12,21 +13,78 @@ export class UserRepository {
     ) {
     };
 
-    async getUser(){
+    async getUserByEmail(
+        email: string
+    ){
 
-        const user = await this.userRepo.find();
+        const user = await this.userRepo.findOne({
+            where: {
+                email
+            }
+        });
 
         return user
-    }
+    };
 
-    async insertUser(){
+    async getUserById(
+        userId: number
+    ){
 
-        const insert = await this.userRepo.insert({
-            email: 'hello',
-            name: 'hello2',
-            password: '1234'
+        const user = await this.userRepo.findOne({
+            where: {
+                userId
+            }
+        });
+
+        return user;
+    };
+
+    async insertUserEntity(
+        entityManager: EntityManager,
+        body: PostSignUpDto,
+        hash: string
+    ){
+
+        const {
+            email,
+            name
+         } = body;
+
+        const insert = await entityManager.insert(UserEntity, {
+            email,
+            name,
+            password: hash
         });
 
         return insert;
+    };
+
+    async updateUserName(
+        entityManager: EntityManager,
+        userId: number,
+        name: string
+    ) {
+
+        const update = await entityManager.update(UserEntity, {
+            userId
+        }, {
+            name
+        });
+
+        return update;
+
+    };
+
+    async removeUserEntity(
+        entityManager: EntityManager,
+        userId: number
+    ){
+
+        const remove = await entityManager.softDelete(UserEntity, {
+            userId
+        });
+
+        return remove;
     }
+
 }

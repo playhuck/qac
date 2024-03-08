@@ -8,6 +8,7 @@ import { JwtProvider } from '@providers/jwt.provider';
 import { RandomProvider } from '@providers/random.provider';
 
 import { UserRepository } from '@repositories/user.repository';
+import { DbUtils } from '@utils/db.utils';
 
 @Global()
 @Module({
@@ -17,6 +18,8 @@ import { UserRepository } from '@repositories/user.repository';
         ])
     ],
     providers: [
+
+        DbUtils,
     
         BcryptProvider,
         JwtProvider,
@@ -26,6 +29,8 @@ import { UserRepository } from '@repositories/user.repository';
         UserRepository
     ],
     exports: [
+        
+        DbUtils,
 
         BcryptProvider,
         JwtProvider,
