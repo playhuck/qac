@@ -10,5 +10,15 @@ export default (): IConfig => ({
         JWT_PUBLIC_PEM_KEY: getPemKey('secrets/jwt.public'),
         JWT_PRIVATE_PEM_KEY: getPemKey('secrets/jwt.private'),
         JWT_PASSPHRASE: getEnvStr('JWT_PASSPHRASE')
-    }
+    },
+    MYSQL_ENV: {
+        type: 'mysql' as 'mysql',
+        host: getEnvStr('MYSQL_ENV_HOST'),
+        port: getEnvNum('MYSQL_ENV_PORT'),
+        username: getEnvStr('MYSQL_ENV_USER'),
+        password: getEnvStr('MYSQL_ENV_PWD'),
+        database: process.env.NODE_ENV === 'test' ? 
+        getEnvStr('MYSQL_ENV_TEST_DB_NAME') : process.env.NODE_ENV === 'dev' ? 
+        getEnvStr('MYSQL_ENV_DEV_DB_NAME') : getEnvStr('MYSQL_ENV_PROD_DB_NAME') 
+    },
 })

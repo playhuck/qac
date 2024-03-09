@@ -1,10 +1,12 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { CustomBaseEntity } from "./base.entity";
+import { QuestionUserListEntity } from "./question.user.list.entity";
 
 @Entity('user')
-export class UserEntity {
+export class UserEntity extends CustomBaseEntity {
 
     @PrimaryGeneratedColumn({
-        name: 'id',
+        name: 'user_id',
         type: 'int'
     })
     userId!: number;
@@ -20,14 +22,14 @@ export class UserEntity {
     @Column({
         name: 'password',
         type: 'varchar',
-        length: 128
+        length: 256
     })
     password!: string;
 
     @Column({
         name: 'name',
         type: 'varchar',
-        length: 50
+        length: 64
     })
     name!: string;
 
@@ -37,5 +39,11 @@ export class UserEntity {
         default: 0
     })
     cash!: number;
+
+    @OneToMany(() => QuestionUserListEntity, (questionUserList) => questionUserList.user, {
+        onDelete: 'CASCADE',
+        cascade: true
+    })
+    questionUserList!: QuestionUserListEntity[];
 
 };

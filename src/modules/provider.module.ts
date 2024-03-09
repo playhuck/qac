@@ -1,3 +1,5 @@
+import { QuestionEntity } from '@entities/question.entity';
+import { QuestionUserListEntity } from '@entities/question.user.list.entity';
 import { UserEntity } from '@entities/user.entity';
 import { Module, Global } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -14,7 +16,9 @@ import { DbUtils } from '@utils/db.utils';
 @Module({
     imports: [
         TypeOrmModule.forFeature([
-            UserEntity
+            UserEntity,
+            QuestionEntity,
+            QuestionUserListEntity
         ])
     ],
     providers: [
