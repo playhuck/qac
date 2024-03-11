@@ -5,7 +5,7 @@ import { map } from 'rxjs/operators';
 @Injectable()
 export class HttpResponseInterceptor implements NestInterceptor {
 
-    constructor() {};
+    constructor() { };
 
     intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
         return next.handle().pipe(
@@ -15,17 +15,29 @@ export class HttpResponseInterceptor implements NestInterceptor {
 
                     if ('tokens' in data) {
                         const { tokens, ...datas } = data;
-                        
+
                         const bearerToken = `Bearer ${tokens}`;
                         res.header('Authorization', bearerToken);
 
-                        return { isSuccess: true, ...datas };
-
+                        return {
+                            code: 0, data: {
+                                ...datas
+                            },
+                            message: 'success'
+                        };
                     } else {
-                        return { isSuccess: true, ...data };
+                        return {
+                            code: 0, data: {
+                                ...data
+                            },
+                            message: 'success'
+                        }
                     }
                 } else {
-                    return { isSuccess: true };
+                    return {
+                        code: 0,
+                        message: 'success'
+                    }
                 };
             })
         );
