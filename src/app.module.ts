@@ -4,6 +4,7 @@ import { CustomConfigModule } from '@modules/config.module';
 import { CustomTypeOrmModule } from '@modules/typeorm.module';
 import { ProvidersModule } from '@modules/provider.module';
 import { UserModule } from '@modules/user.module';
+import { QuestionModule } from '@modules/question.module';
 
 @Module({
   imports: [
@@ -11,7 +12,8 @@ import { UserModule } from '@modules/user.module';
     CustomTypeOrmModule,
     ProvidersModule,
 
-    UserModule
+    UserModule,
+    QuestionModule
   ],
   controllers: [AppController],
   providers: [],
