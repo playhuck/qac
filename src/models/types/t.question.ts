@@ -1,2 +1,6 @@
 
-type TQuestion = 'same' | 'similar' | 'alpha'
+type TQuestion = 'same' | 'similar' | 'alpha';
+
+export {
+    TQuestion
+}
