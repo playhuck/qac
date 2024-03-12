@@ -5,6 +5,8 @@ export enum ECustomExceptionCode {
   /** 중복된 아이디입니다. */ 'USER-001' = 'USER-001',
   /** 존재하지 않는 유저 */ 'USER-002' = 'USER-002',
 
+  /** 관리자 계정이 아님 */ 'ADMIN-001' = 'ADMIN-001',
+
   /** 비밀번호 불일치 */ 'INCORECT-PWD' = 'INCORECT-PWD',
   /** DB 비밀번호 불일치 */ 'INCORECT-DB-PWD' = 'INCORECT-DB-PWD',
 

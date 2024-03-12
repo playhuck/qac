@@ -42,7 +42,8 @@ export class UserRepository {
     async insertUserEntity(
         entityManager: EntityManager,
         body: PostSignUpDto,
-        hash: string
+        hash: string,
+        currTime: string
     ){
 
         const {
@@ -53,7 +54,8 @@ export class UserRepository {
         const insert = await entityManager.insert(UserEntity, {
             email,
             name,
-            password: hash
+            password: hash,
+            createdAt: currTime
         });
 
         return insert;

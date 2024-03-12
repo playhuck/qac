@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { BcryptProvider } from '@providers/bcrypt.provider';
 import { DbUtils } from '@utils/db.utils';
 import { JwtProvider } from '@providers/jwt.provider';
+import { PostQuestionDto } from '@dtos/questions/post.question.dto';
 
 @Injectable()
 export class QuestionService {
@@ -14,6 +15,17 @@ export class QuestionService {
         private readonly jwt: JwtProvider
 
     ) { }
+
+    async postQuestion(
+        body: PostQuestionDto
+    ) {
+
+        await this.db.transaction(async() => {
+
+        }, {
+            body
+        })
+    }
 
    
 };

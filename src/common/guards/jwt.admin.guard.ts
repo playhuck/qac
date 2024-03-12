@@ -12,17 +12,20 @@ import { CustomException } from '@common/exception/custom.exception';
 import {
     ECustomExceptionCode
 } from '@models/enums/e.exception.code';
+import { DataSource } from 'typeorm';
+import { AdminEntity } from '@entities/admin.entity';
 
 @Injectable()
-export class JwtUserGuard implements CanActivate {
+export class JwtAdminGuard implements CanActivate {
     constructor(
-        private jwt: JwtProvider
+        private jwt: JwtProvider,
+        private dataSource: DataSource
     ) { }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request: Request = await context.switchToHttp().getRequest();
         const response: Response = await context.switchToHttp().getResponse();
-        
+
         const token = this.extractTokenFromHeader(request);
         if (!token) {
             throw new CustomException(
@@ -31,7 +34,7 @@ export class JwtUserGuard implements CanActivate {
                 401
             );
         }
-        
+
         const payload = this.jwt.verifyToken(token);
         if (payload['type'] !== 'AccessToken') {
             throw new CustomException(
@@ -41,7 +44,21 @@ export class JwtUserGuard implements CanActivate {
             )
         };
 
-        response["userId"] = payload['userId'];
+        const isAdmin = this.dataSource.manager.findOne(AdminEntity, {
+            where: {
+                adminId: payload['userId']
+            }
+        });
+
+        if (!isAdmin) {
+            throw new CustomException(
+                "관리자 계정이 아님",
+                ECustomExceptionCode['ADMIN-001'],
+                401
+            )
+        };
+
+        response['adminId'] = payload['userId'];
 
         return true;
     };

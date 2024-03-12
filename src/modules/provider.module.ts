@@ -1,4 +1,6 @@
+import { AdminEntity } from '@entities/admin.entity';
 import { QuestionEntity } from '@entities/question.entity';
+import { QuestionMidEntity } from '@entities/question.mid.entity';
 import { QuestionUserListEntity } from '@entities/question.user.list.entity';
 import { UserEntity } from '@entities/user.entity';
 import { Module, Global } from '@nestjs/common';
@@ -8,6 +10,7 @@ import { BcryptProvider } from '@providers/bcrypt.provider';
 import { DayjsProvider } from '@providers/dayjs.provider';
 import { JwtProvider } from '@providers/jwt.provider';
 import { RandomProvider } from '@providers/random.provider';
+import { AdminRepository } from '@repositories/admin.repository';
 
 import { UserRepository } from '@repositories/user.repository';
 import { DbUtils } from '@utils/db.utils';
@@ -18,7 +21,9 @@ import { DbUtils } from '@utils/db.utils';
         TypeOrmModule.forFeature([
             UserEntity,
             QuestionEntity,
-            QuestionUserListEntity
+            QuestionUserListEntity,
+            QuestionMidEntity,
+            AdminEntity
         ])
     ],
     providers: [
@@ -30,7 +35,8 @@ import { DbUtils } from '@utils/db.utils';
         DayjsProvider,
         RandomProvider,
 
-        UserRepository
+        UserRepository,
+        AdminRepository
     ],
     exports: [
         

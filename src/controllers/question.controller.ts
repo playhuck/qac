@@ -1,3 +1,5 @@
+import { JwtAdminGuard } from '@common/guards/jwt.admin.guard';
+import { PostQuestionDto } from '@dtos/questions/post.question.dto';
 import { 
     Body, 
     Controller, 
@@ -13,5 +15,14 @@ import {
 export class QuestionController {
 
     constructor() {};
+
+    @UseGuards(JwtAdminGuard)
+    @Post('')
+    async postQuestion(
+        @Body() body: PostQuestionDto
+    ){
+
+        
+    }
 
 }

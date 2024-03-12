@@ -11,6 +11,7 @@ import { JwtProvider } from '@providers/jwt.provider';
 import { PostSignInDto } from '@dtos/users/post.sign.in.dto';
 import { PatchUserDto } from '@dtos/users/patch.user.dto';
 import { UserParamDto } from '@dtos/users/user.param.dto';
+import { DayjsProvider } from '@providers/dayjs.provider';
 
 @Injectable()
 export class UserService {
@@ -20,6 +21,7 @@ export class UserService {
 
         private readonly bcrypt: BcryptProvider,
         private readonly jwt: JwtProvider,
+        private readonly dyajs: DayjsProvider,
 
         private readonly userRepo: UserRepository
     ) { }
@@ -36,6 +38,7 @@ export class UserService {
                     password,
                     passwordCheck
                 } = args.body;
+                const currTime = this.dyajs.nowUtc;
 
                 const getUser = await this.userRepo.getUserByEmail(email);
                 if (getUser) {
@@ -63,7 +66,8 @@ export class UserService {
                 const insertUserEntity = await this.userRepo.insertUserEntity(
                     entityManager,
                     body,
-                    hashedPassword
+                    hashedPassword,
+                    currTime
                 );
                 if (insertUserEntity.generatedMaps.length !== 1) {
                     throw new CustomException(
@@ -151,7 +155,7 @@ export class UserService {
             }, { body, param })
     };
 
-    async delete(
+    async remove(
         param: UserParamDto
     ) {
         void await this.db.transaction(
