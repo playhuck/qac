@@ -4,7 +4,7 @@ import { BcryptProvider } from '@providers/bcrypt.provider';
 import { DbUtils } from '@utils/db.utils';
 import { JwtProvider } from '@providers/jwt.provider';
 import { PostQuestionDto } from '@dtos/questions/post.question.dto';
-import { EntityManager } from 'typeorm';
+import { EntityManager, InsertResult } from 'typeorm';
 import { AdminRepository } from '@repositories/admin.repository';
 import { CustomException } from '@common/exception/custom.exception';
 import { ECustomExceptionCode } from '@models/enums/e.exception.code';
@@ -17,6 +17,11 @@ import { QueryQuestionDto } from '@dtos/questions/query.question.dto';
 import { CommonUtil } from '@utils/common.util';
 import { QueryCursorQuestionDto } from '@dtos/questions/query.cursor.question.dto';
 import { ConfigService } from '@nestjs/config';
+import { PostAnswerQuestionDto } from '@dtos/questions/post.answer.question.dto';
+import { ParamQuestionDto } from '@dtos/questions/param.question.dto';
+import { QuestionEntity } from '@entities/question.entity';
+import { UserRepository } from '@repositories/user.repository';
+import { ResultSetHeader } from 'mysql2';
 
 @Injectable()
 export class QuestionService {
@@ -35,13 +40,14 @@ export class QuestionService {
         private readonly random: RandomProvider,
 
         private readonly adminRepo: AdminRepository,
-        private readonly questionRepo: QuestionRepository
+        private readonly questionRepo: QuestionRepository,
+        private readonly userRepo: UserRepository
 
     ) {
         this.typeFunction = {
-            'same': this.sameQuestion.bind(this),
-            'similar': this.similarQuestion.bind(this),
-            'alpha': this.alphaQuestion.bind(this)
+            'allDayOnce': this.allDayOnceQuestion.bind(this),
+            'threeHourOnce': this.threeHourOnceQuestion.bind(this),
+            'onlyOnce': this.onlyOnceQuestion.bind(this)
         }
     }
 
@@ -94,20 +100,169 @@ export class QuestionService {
         })
     };
 
-    async sameQuestion(
-        entityManager: EntityManager,
-        body: PostQuestionDto
-    ) { }
+    async postAnswerQuestion(
+        userId: number,
+        body: PostAnswerQuestionDto,
+        param: ParamQuestionDto
+    ) {
 
-    async similarQuestion(
-        entityManager: EntityManager,
-        body: PostQuestionDto
-    ) { }
+        await this.db.transaction(
+            async (entityManager: EntityManager, args) => {
 
-    async alphaQuestion(
+                const { userId, body, param } = args;
+                const { questionId } = param;
+                const { questionAnswer: inputAnswer } = body;
+                const createdAt = this.dayjs.getDatetimeByOptions('YYYY-MM-DD HH:mm:ss');
+
+                const question = await this.questionRepo.getQuestionById(questionId);
+                if (!question) {
+                    throw new CustomException(
+                        "문제를 찾을 수 없음",
+                        ECustomExceptionCode["QUESTION-002"],
+                        403
+                    )
+                };
+                const {
+                    questionType,
+                    questionQuantity,
+                    questionAnswer: originAnswer,
+                    questionCash,
+                    questionMid
+                } = question;
+
+                const questionQuantityLimit = await this.questionRepo.getQuestionQuantityLimit(
+                    entityManager,
+                    questionId
+                );
+                if (questionQuantityLimit.length > questionQuantity) {
+                    throw new CustomException(
+                        "특정 문제 별 일일 이용한도 초과",
+                        ECustomExceptionCode["QUESTION-003"],
+                        400
+                    )
+                };
+
+                await this.typeFunction[questionType](
+                    entityManager,
+                    userId,
+                    questionMid
+                );
+
+                const isAnswerd = originAnswer !== inputAnswer ? false : true;
+
+                const insertQuestionUser = await this.questionRepo.insertQusetionUser(
+                    entityManager,
+                    questionId,
+                    userId,
+                    questionMid,
+                    isAnswerd,
+                    createdAt
+                ) as ResultSetHeader;
+                if (insertQuestionUser.affectedRows !== 1) {
+                    throw new CustomException(
+                        "정답 반영 실패",
+                        ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                        500
+                    );
+                }
+
+                const user = await this.userRepo.getEmUserById(entityManager, userId);
+
+                const calCash = user!.cash += questionCash;
+
+                const updateUserCash = await this.userRepo.updateUserCash(
+                    entityManager,
+                    userId,
+                    calCash
+                );
+
+                if (updateUserCash.affected !== 1) {
+                    throw new CustomException(
+                        "정답 반영 실패",
+                        ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                        500
+                    );
+                };
+
+            }, {
+            userId, body, param
+        })
+    }
+
+    async allDayOnceQuestion(
         entityManager: EntityManager,
-        body: PostQuestionDto
-    ) { };
+        userId: number,
+        questionMid: string
+    ) {
+
+        const previousMidnight = this.dayjs.getNextDayMidnight();
+        const nextMidnight = this.dayjs.addTime(previousMidnight, 24, 'hour', 'YYYY-MM-DD HH:mm:ss');
+
+        const isAllDayOnce = await this.questionRepo.getAllDayOnceByMid(
+            entityManager,
+            userId,
+            questionMid,
+            previousMidnight,
+            nextMidnight
+        );
+
+        if (isAllDayOnce.length > 0) {
+            throw new CustomException(
+                "특정 문제 별 일일 이용한도 초과",
+                ECustomExceptionCode["MID-001"],
+                400
+            )
+        };
+
+    }
+
+    async threeHourOnceQuestion(
+        entityManager: EntityManager,
+        userId: number,
+        questionMid: string
+    ) {
+
+        const getLastAnsweredMid = await this.questionRepo.getLastAnsweredMid(
+            entityManager,
+            questionMid,
+            userId
+        );
+        if (getLastAnsweredMid.length === 0) return true;
+        else {
+
+            const { createdAt } = getLastAnsweredMid[0];
+            const lastDiffTime = this.dayjs.getDifftime(createdAt, 'hours');
+            if (lastDiffTime < 3) {
+                throw new CustomException(
+                    "특정 MID 별 3시간 별 이용한도 초과",
+                    ECustomExceptionCode["MID-002"],
+                    400
+                )
+            };
+
+        }
+
+    };
+
+    async onlyOnceQuestion(
+        entityManager: EntityManager,
+        userId: number,
+        questionMid: string
+    ) {
+
+        const getOnlyOnceByMid = await this.questionRepo.getOnlyOnceByMid(
+            entityManager,
+            userId,
+            questionMid
+        );
+        if (getOnlyOnceByMid) {
+            throw new CustomException(
+                "특정 MID 별 전체 이용한도 초과",
+                ECustomExceptionCode["MID-003"],
+                400
+            )
+        }
+    };
 
     async getOffsetQuestionList(
         query: QueryQuestionDto
@@ -134,10 +289,13 @@ export class QuestionService {
     };
 
     async getCursorQuetionList(
-        query: QueryCursorQuestionDto
+        query: QueryCursorQuestionDto,
+        userId: number
     ) {
 
         const { pageCount: take, cursorId } = query;
+        const previousMidnight = this.dayjs.getNextDayMidnight();
+        const nextMidnight = this.dayjs.addTime(previousMidnight, 24, 'hour', 'YYYY-MM-DD HH:mm:ss');
 
         const decrypteCursor = cursorId ? this.jwt.verifyCursorToken(
             cursorId
@@ -145,8 +303,22 @@ export class QuestionService {
 
         const questionList = await this.questionRepo.getCursorQuestionList(
             take,
+            userId,
+            previousMidnight,
+            nextMidnight,
             decrypteCursor ? decrypteCursor['cursorId'] : undefined
         );
+
+        const test = await this.questionRepo.test(
+            take,
+            userId,
+            previousMidnight,
+            nextMidnight,
+            decrypteCursor ? decrypteCursor['cursorId'] : undefined
+        );
+
+        console.log(test);
+        
 
         const isNextCursor = questionList.length > 0 ? questionList[questionList.length - 1].questionId : null;
 

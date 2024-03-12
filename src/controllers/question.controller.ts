@@ -1,6 +1,9 @@
 import { AdminId } from '@common/decorators/get.admin.decorator';
+import { UserId } from '@common/decorators/get.user.decorator';
 import { JwtAdminGuard } from '@common/guards/jwt.admin.guard';
 import { JwtUserGuard } from '@common/guards/jwt.user.guard';
+import { ParamQuestionDto } from '@dtos/questions/param.question.dto';
+import { PostAnswerQuestionDto } from '@dtos/questions/post.answer.question.dto';
 import { PostQuestionDto } from '@dtos/questions/post.question.dto';
 import { QueryCursorQuestionDto } from '@dtos/questions/query.cursor.question.dto';
 import { QueryQuestionDto } from '@dtos/questions/query.question.dto';
@@ -36,6 +39,22 @@ export class QuestionController {
     };
 
     @UseGuards(JwtUserGuard)
+    @Post('/:questionId/answer')
+    async postAnswerQuestion(
+        @UserId() userId: number,
+        @Param() param: ParamQuestionDto,
+        @Body() body: PostAnswerQuestionDto
+    ){
+
+        void await this.service.postAnswerQuestion(
+            userId,
+            body,
+            param
+        );
+
+    }
+
+    @UseGuards(JwtUserGuard)
     @Get('/offset/list')
     async getOffsetQuestionList(
         @Query() query: QueryQuestionDto
@@ -62,11 +81,13 @@ export class QuestionController {
     @UseGuards(JwtUserGuard)
     @Get('/cursor/list')
     async getCursorQuestionList(
-        @Query() query: QueryCursorQuestionDto
+        @Query() query: QueryCursorQuestionDto,
+        @UserId() userId: number
     ) {
 
         const questionList = await this.service.getCursorQuetionList(
-            query
+            query,
+            userId
         );
 
         return questionList?.encrypteCursor ? {

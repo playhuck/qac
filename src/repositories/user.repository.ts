@@ -39,6 +39,20 @@ export class UserRepository {
         return user;
     };
 
+    async getEmUserById(
+        entityManager: EntityManager,
+        userId: number
+    ){
+
+        const user = await entityManager.findOne(UserEntity, {
+            where: {
+                userId
+            }
+        });
+
+        return user;
+    };
+
     async insertUserEntity(
         entityManager: EntityManager,
         body: PostSignUpDto,
@@ -77,6 +91,21 @@ export class UserRepository {
 
     };
 
+    async updateUserCash(
+        entityManager: EntityManager,
+        userId: number,
+        cash: number
+    ) {
+
+        const update = await entityManager.update(UserEntity, {
+            userId
+        }, {
+            cash
+        });
+
+        return update;
+    }
+
     async removeUserEntity(
         entityManager: EntityManager,
         userId: number
@@ -87,6 +116,6 @@ export class UserRepository {
         });
 
         return remove;
-    }
+    };
 
 }

@@ -44,7 +44,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     private errorResponse(exception: unknown): IErrorResponse {
         const errResponse = exception?.['response'];
-
+        console.log(exception);
+        
         const message = exception?.['name'] === 'QueryFailedError' ?
             ECustomExceptionCode['AWS-RDS-EXCEPTION'] :
             errResponse?.['errorMessage'] ?? exception?.['message']

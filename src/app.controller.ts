@@ -1,11 +1,19 @@
 import { Controller, Get } from '@nestjs/common';
+import { DayjsProvider } from '@providers/dayjs.provider';
 
 @Controller()
 export class AppController {
-  constructor() {}
+  constructor(
+    private readonly dayjs: DayjsProvider
+  ) {}
 
-  @Get()
-  getHello() {
-    return 'hello';
+  @Get('')
+  async getHello() {
+
+    const previousMidnight = this.dayjs.getNextDayMidnight();
+    const nextMidnight = this.dayjs.addTime(previousMidnight, 24, 'hour', 'YYYY-MM-DD HH:mm:ss');
+
+    console.log(previousMidnight, nextMidnight);
+    
   }
 }

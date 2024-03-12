@@ -7,7 +7,7 @@ import { QuestionEntity } from "./question.entity";
 export class QuestionUserListEntity extends CustomBaseEntity {
 
     @PrimaryGeneratedColumn({
-        name: 'id',
+        name: 'question_user_list_id',
         type: 'int'
     })
     questionUserListId!: number;
@@ -23,6 +23,14 @@ export class QuestionUserListEntity extends CustomBaseEntity {
         type: 'int'
     })
     userId!: number;
+
+    @Column({
+        name: 'question_mid',
+        type: 'varchar',
+        length: '256',
+        nullable: false
+    })
+    questionMid!: string;
 
     @Column({
         name: 'is_answer',

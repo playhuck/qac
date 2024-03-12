@@ -8,6 +8,13 @@ export enum ECustomExceptionCode {
   /** 관리자 계정이 아님 */ 'ADMIN-001' = 'ADMIN-001',
 
   /** 문제 타입 불일치 */ 'QUESTION-001' = 'QUESTION-001',
+  /** 문제를 찾을 수 없음 */ 'QUESTION-002' = 'QUESTION-002',
+  /** 특정 문제 별 일일 이용한도 초과 */ 'QUESTION-003' = 'QUESTION-003',
+  /** 문제 오답 */ 'QUESTION-004' = 'QUESTION-004',
+  
+  /** 특정 MID 별 일일 이용한도 초과 */ 'MID-001' = 'MID-001',
+  /** 특정 MID 별 3시간 별 이용한도 초과 */ 'MID-002' = 'MID-002',
+  /** 특정 MID 별 전체 이용한도 초과 */ 'MID-003' = 'MID-003',
 
   /** 비밀번호 불일치 */ 'INCORECT-PWD' = 'INCORECT-PWD',
   /** DB 비밀번호 불일치 */ 'INCORECT-DB-PWD' = 'INCORECT-DB-PWD',
