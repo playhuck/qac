@@ -45,6 +45,7 @@ export class QuestionRepository {
             questionMid,
             questionQuantity: body.questionQuantity,
             questionType: body.questionType,
+            questionCash: body.questionCash,
             createdAt,
             adminId
         });

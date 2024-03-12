@@ -13,6 +13,9 @@ export class PostQuestionDto {
     questionQuantity!: number;
 
     @IsNotEmptyString()
-    questionType!: TQuestion
+    questionType!: TQuestion;
+
+    @IsNotEmptyNumber()
+    questionCash!: number;
 
 }
