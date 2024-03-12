@@ -13,6 +13,8 @@ import { QuestionRepository } from '@repositories/question.repository';
 import { DayjsProvider } from '@providers/dayjs.provider';
 import { RandomProvider } from '@providers/random.provider';
 import { EQuestionType } from '@models/enums/e.question';
+import { QueryQuestionDto } from '@dtos/questions/query.question.dto';
+import { CommonUtil } from '@utils/common.util';
 
 @Injectable()
 export class QuestionService {
@@ -23,6 +25,7 @@ export class QuestionService {
 
     constructor(
         private readonly db: DbUtils,
+        private readonly util: CommonUtil,
 
         private readonly dayjs: DayjsProvider,
         private readonly random: RandomProvider,
@@ -49,7 +52,7 @@ export class QuestionService {
                 const { adminId, body } = args;
                 const createdAt = this.dayjs.getDatetimeByOptions('YYYY-MM-DD HH:mm:ss');
 
-                if(!EQuestionType[body.questionType]){
+                if (!EQuestionType[body.questionType]) {
                     throw new CustomException(
                         "문제 타입 불일치",
                         ECustomExceptionCode["USER-001"],
@@ -59,25 +62,36 @@ export class QuestionService {
 
                 const midnight = this.dayjs.getNextDayMidnight();
                 const getMids = await this.questionRepo.getQuestionMids(midnight);
-                const { mid } : {
+                const { mid }: {
                     mid: string
-                }= await this.random.getRandomValueFromArray(getMids);
-                
-                const postQ = await this.questionRepo.insertQuestion(
-                    entityManager,
-                    body,
-                    mid,
-                    createdAt,
-                    adminId
-                );
+                } = await this.random.getRandomValueFromArray(getMids);
 
-                if(postQ.generatedMaps.length !== 1) {
-                    throw new CustomException(
-                        "Question 생성 실패",
-                        ECustomExceptionCode["AWS-RDS-EXCEPTION"],
-                        500
-                    )
-                };
+                for (let i = 0; i < 10000; i++) {
+
+                    const postQ = await this.questionRepo.insertQuestion(
+                        entityManager,
+                        {
+                            questionAnswer: body.questionAnswer + i,
+                            questionCash: body.questionCash,
+                            questionQuantity: body.questionQuantity,
+                            questionTitle: body.questionTitle + i,
+                            questionType: 'same'
+                        },
+                        mid,
+                        createdAt,
+                        adminId
+                    );
+
+                    if (postQ.generatedMaps.length !== 1) {
+                        throw new CustomException(
+                            "Question 생성 실패",
+                            ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                            500
+                        )
+                    };
+
+                }
+
 
             }, {
             body,
@@ -98,7 +112,22 @@ export class QuestionService {
     async alphaQuestion(
         entityManager: EntityManager,
         body: PostQuestionDto
-    ) { }
+    ) { };
+
+    async getOffsetQuestionList(
+        query: QueryQuestionDto
+    ) {
+
+        const { page, pageCount : take } = query;
+        const skip = await this.util.skipedItem(page, take);
+
+        const questionList = await this.questionRepo.getOffsetQuestionList(
+            skip,
+            take
+        );
+
+        return questionList
+    }
 
 
 };

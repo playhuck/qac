@@ -1,6 +1,8 @@
 import { AdminId } from '@common/decorators/get.admin.decorator';
 import { JwtAdminGuard } from '@common/guards/jwt.admin.guard';
+import { JwtUserGuard } from '@common/guards/jwt.user.guard';
 import { PostQuestionDto } from '@dtos/questions/post.question.dto';
+import { QueryQuestionDto } from '@dtos/questions/query.question.dto';
 import { 
     Body, 
     Controller, 
@@ -30,6 +32,24 @@ export class QuestionController {
             adminId
         );
         
+    };
+
+    @UseGuards(JwtUserGuard)
+    @Get('/list/offset')
+    async getOffsetQuestionList(
+        @Query() query: QueryQuestionDto
+    ){
+
+        const questionList = await this.service.getOffsetQuestionList(
+            query
+        );
+
+        return { questionList };
+
     }
+
+    @UseGuards(JwtUserGuard)
+    @Get('/list/cursor')
+    async getCursorQuestionList(){}
 
 }

@@ -29,6 +29,23 @@ export class QuestionRepository {
             .getRawMany();
 
         return mids
+    };
+
+    async getOffsetQuestionList(
+        skip: number,
+        take: number
+    ) {
+
+        const questionList = await this.questionRepo.find({
+            skip,
+            take,
+            order: {
+                'createdAt': 'DESC'
+            }
+        });
+
+        return questionList;
+
     }
 
     async insertQuestion(

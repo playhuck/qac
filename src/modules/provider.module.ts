@@ -14,6 +14,7 @@ import { AdminRepository } from '@repositories/admin.repository';
 import { QuestionRepository } from '@repositories/question.repository';
 
 import { UserRepository } from '@repositories/user.repository';
+import { CommonUtil } from '@utils/common.util';
 import { DbUtils } from '@utils/db.utils';
 
 @Global()
@@ -30,6 +31,7 @@ import { DbUtils } from '@utils/db.utils';
     providers: [
 
         DbUtils,
+        CommonUtil,
     
         BcryptProvider,
         JwtProvider,
@@ -43,6 +45,7 @@ import { DbUtils } from '@utils/db.utils';
     exports: [
         
         DbUtils,
+        CommonUtil,
 
         BcryptProvider,
         JwtProvider,
