@@ -33,10 +33,7 @@ export class AdminEntity extends CustomBaseEntity {
     })
     name!: string;
 
-    @OneToMany(() => QuestionEntity, (question) => question.admin, {
-        onDelete: 'CASCADE',
-        cascade: true
-    })
+    @OneToMany(() => QuestionEntity, (question) => question.admin)
     questions!: QuestionEntity[];
 
 };

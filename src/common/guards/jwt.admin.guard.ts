@@ -44,13 +44,11 @@ export class JwtAdminGuard implements CanActivate {
             )
         };
 
-        const isAdmin = this.dataSource.manager.findOne(AdminEntity, {
-            where: {
-                adminId: payload['userId']
-            }
-        });
-
-        if (!isAdmin) {
+        const isAdmin = await this.dataSource.manager.query(
+            `SELECT admin_id as adminId FROM admin WHERE admin_id = ?`, [payload['adminId']]
+        )
+        
+        if (isAdmin.length !== 1) {
             throw new CustomException(
                 "관리자 계정이 아님",
                 ECustomExceptionCode['ADMIN-001'],
@@ -58,7 +56,7 @@ export class JwtAdminGuard implements CanActivate {
             )
         };
 
-        response['adminId'] = payload['userId'];
+        response['adminId'] = isAdmin[0].adminId
 
         return true;
     };

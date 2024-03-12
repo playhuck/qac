@@ -7,6 +7,8 @@ export enum ECustomExceptionCode {
 
   /** 관리자 계정이 아님 */ 'ADMIN-001' = 'ADMIN-001',
 
+  /** 문제 타입 불일치 */ 'QUESTION-001' = 'QUESTION-001',
+
   /** 비밀번호 불일치 */ 'INCORECT-PWD' = 'INCORECT-PWD',
   /** DB 비밀번호 불일치 */ 'INCORECT-DB-PWD' = 'INCORECT-DB-PWD',
 

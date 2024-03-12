@@ -11,6 +11,7 @@ import { DayjsProvider } from '@providers/dayjs.provider';
 import { JwtProvider } from '@providers/jwt.provider';
 import { RandomProvider } from '@providers/random.provider';
 import { AdminRepository } from '@repositories/admin.repository';
+import { QuestionRepository } from '@repositories/question.repository';
 
 import { UserRepository } from '@repositories/user.repository';
 import { DbUtils } from '@utils/db.utils';
@@ -36,7 +37,8 @@ import { DbUtils } from '@utils/db.utils';
         RandomProvider,
 
         UserRepository,
-        AdminRepository
+        AdminRepository,
+        QuestionRepository
     ],
     exports: [
         
@@ -47,7 +49,9 @@ import { DbUtils } from '@utils/db.utils';
         DayjsProvider,
         RandomProvider,
 
-        UserRepository
+        UserRepository,
+        AdminRepository,
+        QuestionRepository
 
     ]
 })

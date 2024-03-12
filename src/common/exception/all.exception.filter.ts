@@ -45,6 +45,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
     private errorResponse(exception: unknown): IErrorResponse {
         const errResponse = exception?.['response'];
 
+        const message = exception?.['name'] === 'QueryFailedError' ?
+            ECustomExceptionCode['AWS-RDS-EXCEPTION'] :
+            errResponse?.['errorMessage'] ?? exception?.['message']
+
         if (exception instanceof CustomException) {
             return {
                 code: 1,
@@ -52,17 +56,17 @@ export class AllExceptionsFilter implements ExceptionFilter {
                     errorType: exception?.['name'],
                     errorCode: errResponse?.['errorCode'] ?? exception?.['errorCode']
                 },
-                message: errResponse?.['errorMessage'] ?? exception?.['message']
+                message
             }
         }
 
         return {
             code: 1,
-            data : {
+            data: {
                 errorType: exception?.['name'],
                 errorCode: errResponse?.['errorCode'] ?? exception?.['errorCode']
             },
-            message: errResponse?.['errorMessage'] ?? exception?.['message']
+            message
         }
     }
 }

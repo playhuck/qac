@@ -16,13 +16,14 @@ import { ECustomExceptionCode } from '@models/enums/e.exception.code';
 @Injectable()
 export class KeyAdminGuard implements CanActivate {
     constructor(
-        private jwt: JwtProvider,
-        private dataSource: DataSource,
         private readonly config: ConfigService
     ) { }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request: Request = await context.switchToHttp().getRequest();
+        console.log(request.headers.apikey);
+        console.log(this.config.get<string>('API_KEY'));
+        
         
         if (request.headers.apikey === this.config.get<string>('API_KEY')) {
             return true

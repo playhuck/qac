@@ -33,6 +33,10 @@ export class DayjsProvider {
     return this.getDatetimeByOptions('YYYY-MM-DD HH:mm:ss');
   }
 
+  public getNextDayMidnight() {
+    return dayjs().utc().utcOffset(0).add(1, 'day').format('YYYY-MM-DD ') + '00:00:00';
+}
+
   /** [DB 기록용] datetime은 반드시 **utc 표준시**로 기록되어야 합니다. */
   public getDatetimeByOptions<T extends TDatetimeFormat>(
     dFormat: T,

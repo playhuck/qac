@@ -59,6 +59,13 @@ export class QuestionEntity extends CustomBaseEntity {
     })
     questionCash!: number; // 질문을 맞췄을 때 지급될 캐쉬(포인트)
 
+    @Column({
+        name: 'admin_id',
+        type: 'int',
+        nullable: false
+    })
+    adminId!: number;
+
     @OneToMany(() => QuestionUserListEntity, (questionUserList) => questionUserList, {
         onDelete: 'CASCADE',
         cascade: true

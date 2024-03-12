@@ -13,6 +13,11 @@ export class RandomProvider {
         }
 
         return result;
+    };
+
+    async getRandomValueFromArray(array: any) {
+        const randomIndex = Math.floor(Math.random() * array.length);
+        return array[randomIndex];
     }
 
 }
