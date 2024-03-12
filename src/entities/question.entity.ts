@@ -1,7 +1,8 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Admin, Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { CustomBaseEntity } from "./base.entity";
 import { QuestionUserListEntity } from "./question.user.list.entity";
 import { TQuestion } from "@models/types/t.question";
+import { AdminEntity } from "./admin.entity";
 
 @Entity('question')
 export class QuestionEntity extends CustomBaseEntity {
@@ -63,5 +64,9 @@ export class QuestionEntity extends CustomBaseEntity {
         cascade: true
     })
     questionUserList!: QuestionUserListEntity[];
+
+    @ManyToOne(() => AdminEntity, admin => admin.questions)
+    @JoinColumn({ name: 'admin_id' })
+    admin!: AdminEntity;
 
 }
