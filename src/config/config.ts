@@ -3,6 +3,7 @@ import { getEnvLiteralTypeValue, getEnvMode, getEnvNum, getEnvStr, getPemKey } f
 
 export default (): IConfig => ({
     PORT: getEnvNum('PORT') || 3000,
+    API_KEY: getEnvStr('API_KEY'),
     JWT: {
         JWT_SECRET_KEY: getEnvStr('JWT_SECRET_KEY'),
         JWT_ACCESS_EXPIRED_IN: getEnvStr('JWT_ACCESS_EXPIRED_IN'),

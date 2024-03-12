@@ -7,6 +7,8 @@ export interface IConfig {
     JWT: IJWT_ENV;
 
     MYSQL_ENV: IMYSQL_ENV;
+
+    API_KEY: string;
 };
 
 export interface IJWT_ENV {

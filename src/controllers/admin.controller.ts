@@ -14,7 +14,9 @@ import { PostSignInDto } from '@dtos/users/post.sign.in.dto';
 import { PostAdminSignUpDto } from '@dtos/admin/post.sign.up.dto';
 import { PostAdminSignInDto } from '@dtos/admin/post.sign.in.dto';
 import { AdminService } from '@services/admin.service';
+import { KeyAdminGuard } from '@common/guards/key.admin.guard';
 
+@UseGuards(KeyAdminGuard)
 @Controller('admin')
 export class AdminController {
 
