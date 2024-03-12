@@ -8,7 +8,7 @@ import { ECustomExceptionCode } from '@models/enums/e.exception.code';
 import { IJWT_ENV } from '@models/interfaces/i.config';
 
 declare module "jsonwebtoken" {
-    export type CustomTokenType = "AccessToken" | "RefreshToken";
+    export type CustomTokenType = "AccessToken" | "RefreshToken" | "CursorToken";
 
     export interface ICustomPayload extends jwt.JwtPayload {
         type: CustomTokenType;
@@ -23,6 +23,11 @@ declare module "jsonwebtoken" {
     export interface IRefreshTokenPayload extends ICustomPayload {
         type: "RefreshToken";
         userId: number;
+    }
+
+    export interface ICursorPayload extends ICustomPayload {
+        type: "CursorToken",
+        cursorId: number
     }
 
 };
@@ -59,6 +64,15 @@ export class JwtProvider {
                 algorithm: JWT_ALGORITHM
             }
         )
+    };
+
+    public signCursorAccessToken(payload: jwt.ICursorPayload): string {
+
+        return jwt.sign(
+            payload, this.config.get<string>('CURSOR_KEY')!, {
+            expiresIn: '1d',
+            algorithm: 'HS256'
+        })
     };
 
     public signExpiredToken(payload: jwt.IRefreshTokenPayload): string {
@@ -108,21 +122,38 @@ export class JwtProvider {
         }
     };
 
+    public verifyCursorToken<T extends jwt.ICursorPayload>(token: string): T {
+
+        try {
+            return <T>jwt.verify(token, this.config.get<string>('CURSOR_KEY')!, {
+                algorithms: ['HS256'],
+            });
+
+        } catch (err) {
+
+            throw new CustomException(
+                '토큰 검증 실패',
+                ECustomExceptionCode['JWT-002'],
+                401
+            );
+        }
+    };
+
     public verifyExp(
         token: jwt.ICustomPayload,
         type: CustomTokenType
-        ) {
+    ) {
 
         const timeDiffSec = this.getTimeDiffSec(token);
-        
-        if(type === 'AccessToken'){
+
+        if (type === 'AccessToken') {
             return timeDiffSec <= 3540 ? false : true
         } else {
             return timeDiffSec <= 2524740 ? false : true
         }
     };
 
-    private getTimeDiffSec(token: jwt.ICustomPayload){
+    private getTimeDiffSec(token: jwt.ICustomPayload) {
         const expirationTimeInSeconds = token.exp!;
         const expirationDate = new Date(expirationTimeInSeconds * 1000);
 

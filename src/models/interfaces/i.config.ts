@@ -9,6 +9,8 @@ export interface IConfig {
     MYSQL_ENV: IMYSQL_ENV;
 
     API_KEY: string;
+
+    CURSOR_KEY: string;
 };
 
 export interface IJWT_ENV {

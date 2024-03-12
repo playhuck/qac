@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { Repository, DataSource, EntityManager } from "typeorm";
+import { Repository, DataSource, EntityManager, LessThan, FindOptionsWhere, MoreThan } from "typeorm";
 
 import { UserEntity } from "@entities/user.entity";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -9,6 +9,7 @@ import { PostQuestionDto } from "@dtos/questions/post.question.dto";
 import { QuestionEntity } from "@entities/question.entity";
 import { QuestionMidEntity } from "@entities/question.mid.entity";
 import { QuestionUserListEntity } from "@entities/question.user.list.entity";
+import { QueryCursorQuestionDto } from "@dtos/questions/query.cursor.question.dto";
 
 @Injectable()
 export class QuestionRepository {
@@ -40,11 +41,37 @@ export class QuestionRepository {
             skip,
             take,
             order: {
-                'createdAt': 'DESC'
+                'questionId': 'ASC'
             }
         });
 
         return questionList;
+
+    };
+
+    async getOffsetQuestionListCount(){
+
+        const count = await this.questionRepo.query(`SELECT COUNT(*) AS count FROM question`);
+        
+        return count[0]?.count;
+    };
+
+    async getCursorQuestionList(
+        take: number,
+        cursorId?: number
+    ){
+
+        const questionList = await this.questionRepo.find({
+            take,
+            where: cursorId ? {
+                questionId: MoreThan(cursorId)
+            } : null as unknown as FindOptionsWhere<QuestionEntity>,
+            order: {
+                questionId: 'ASC'
+            }
+        });
+
+        return questionList
 
     }
 

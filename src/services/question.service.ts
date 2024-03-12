@@ -15,6 +15,8 @@ import { RandomProvider } from '@providers/random.provider';
 import { EQuestionType } from '@models/enums/e.question';
 import { QueryQuestionDto } from '@dtos/questions/query.question.dto';
 import { CommonUtil } from '@utils/common.util';
+import { QueryCursorQuestionDto } from '@dtos/questions/query.cursor.question.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class QuestionService {
@@ -24,9 +26,11 @@ export class QuestionService {
     }
 
     constructor(
+
         private readonly db: DbUtils,
         private readonly util: CommonUtil,
 
+        private readonly jwt: JwtProvider,
         private readonly dayjs: DayjsProvider,
         private readonly random: RandomProvider,
 
@@ -66,31 +70,22 @@ export class QuestionService {
                     mid: string
                 } = await this.random.getRandomValueFromArray(getMids);
 
-                for (let i = 0; i < 10000; i++) {
 
-                    const postQ = await this.questionRepo.insertQuestion(
-                        entityManager,
-                        {
-                            questionAnswer: body.questionAnswer + i,
-                            questionCash: body.questionCash,
-                            questionQuantity: body.questionQuantity,
-                            questionTitle: body.questionTitle + i,
-                            questionType: 'same'
-                        },
-                        mid,
-                        createdAt,
-                        adminId
-                    );
+                const postQ = await this.questionRepo.insertQuestion(
+                    entityManager,
+                    body,
+                    mid,
+                    createdAt,
+                    adminId
+                );
 
-                    if (postQ.generatedMaps.length !== 1) {
-                        throw new CustomException(
-                            "Question 생성 실패",
-                            ECustomExceptionCode["AWS-RDS-EXCEPTION"],
-                            500
-                        )
-                    };
-
-                }
+                if (postQ.generatedMaps.length !== 1) {
+                    throw new CustomException(
+                        "Question 생성 실패",
+                        ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                        500
+                    )
+                };
 
 
             }, {
@@ -118,7 +113,7 @@ export class QuestionService {
         query: QueryQuestionDto
     ) {
 
-        const { page, pageCount : take } = query;
+        const { page, pageCount: take } = query;
         const skip = await this.util.skipedItem(page, take);
 
         const questionList = await this.questionRepo.getOffsetQuestionList(
@@ -127,7 +122,49 @@ export class QuestionService {
         );
 
         return questionList
-    }
+    };
+
+    async getOffsetQuestionListCount() {
+
+        const questionCount = await this.questionRepo.getOffsetQuestionListCount();
+
+        const pages = Math.ceil(questionCount / 15);
+
+        return pages
+    };
+
+    async getCursorQuetionList(
+        query: QueryCursorQuestionDto
+    ) {
+
+        const { pageCount: take, cursorId } = query;
+
+        const decrypteCursor = cursorId ? this.jwt.verifyCursorToken(
+            cursorId
+        ) : undefined;
+
+        const questionList = await this.questionRepo.getCursorQuestionList(
+            take,
+            decrypteCursor ? decrypteCursor['cursorId'] : undefined
+        );
+
+        const isNextCursor = questionList.length > 0 ? questionList[questionList.length - 1].questionId : null;
+
+        const encrypteCursor = isNextCursor ? this.jwt.signCursorAccessToken(
+            {
+                type: 'CursorToken',
+                cursorId: isNextCursor
+            }
+        ) : undefined;
+
+        return encrypteCursor ? {
+            encrypteCursor,
+            questionList
+        } : {
+            questionList
+        }
+
+    };
 
 
 };

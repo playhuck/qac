@@ -1,4 +1,6 @@
 import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import crypto from 'crypto';
 
 @Injectable()
 export class CommonUtil {
@@ -15,6 +17,6 @@ export class CommonUtil {
         const emailRegex = new RegExp(/^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,4}$/i)
 
         return emailRegex.test(email);
-    }
+    };
 
 }
