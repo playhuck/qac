@@ -47,18 +47,20 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
         if (exception instanceof CustomException) {
             return {
-                code: errResponse?.['errorCode'] ?? exception?.['errorCode'],
+                code: 1,
                 data: {
-                    errorType: exception?.['name']
+                    errorType: exception?.['name'],
+                    errorCode: errResponse?.['errorCode'] ?? exception?.['errorCode']
                 },
                 message: errResponse?.['errorMessage'] ?? exception?.['message']
             }
         }
 
         return {
-            code: ECustomExceptionCode["UNKNOWN-SERVER-ERROR"],
+            code: 1,
             data : {
-                errorType: exception?.['name']
+                errorType: exception?.['name'],
+                errorCode: errResponse?.['errorCode'] ?? exception?.['errorCode']
             },
             message: errResponse?.['errorMessage'] ?? exception?.['message']
         }
