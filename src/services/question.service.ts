@@ -155,6 +155,7 @@ export class QuestionService {
                     questionId,
                     userId,
                     questionMid,
+                    questionType,
                     isAnswerd,
                     createdAt
                 ) as ResultSetHeader;
@@ -205,6 +206,9 @@ export class QuestionService {
             previousMidnight,
             nextMidnight
         );
+
+        console.log(isAllDayOnce);
+        
 
         if (isAllDayOnce.length > 0) {
             throw new CustomException(

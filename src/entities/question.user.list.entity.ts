@@ -2,6 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "t
 import { CustomBaseEntity } from "./base.entity";
 import { UserEntity } from "./user.entity";
 import { QuestionEntity } from "./question.entity";
+import { TQuestion } from "@models/types/t.question";
 
 @Entity('question_user_list')
 export class QuestionUserListEntity extends CustomBaseEntity {
@@ -31,6 +32,14 @@ export class QuestionUserListEntity extends CustomBaseEntity {
         nullable: false
     })
     questionMid!: string;
+
+    @Column({
+        name: 'question_type',
+        type: 'varchar',
+        length: '64',
+        nullable: false
+    })
+    questionType!: TQuestion;
 
     @Column({
         name: 'is_answer',
