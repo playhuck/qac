@@ -105,7 +105,7 @@ export class QuestionService {
         body: PostAnswerQuestionDto,
         param: ParamQuestionDto
     ) {
-
+        
         await this.db.transaction(
             async (entityManager: EntityManager, args) => {
 
@@ -134,7 +134,7 @@ export class QuestionService {
                     entityManager,
                     questionId
                 );
-                if (questionQuantityLimit.length > questionQuantity) {
+                if (questionQuantityLimit.length >= questionQuantity) {
                     throw new CustomException(
                         "특정 문제 별 일일 이용한도 초과",
                         ECustomExceptionCode["QUESTION-003"],
@@ -179,7 +179,7 @@ export class QuestionService {
 
                 if (updateUserCash.affected !== 1) {
                     throw new CustomException(
-                        "정답 반영 실패",
+                        "유저 Cash 반영 실패",
                         ECustomExceptionCode["AWS-RDS-EXCEPTION"],
                         500
                     );
@@ -207,12 +207,9 @@ export class QuestionService {
             nextMidnight
         );
 
-        console.log(isAllDayOnce);
-        
-
         if (isAllDayOnce.length > 0) {
             throw new CustomException(
-                "특정 문제 별 일일 이용한도 초과",
+                "특정 MID 별 일일 이용한도 초과",
                 ECustomExceptionCode["MID-001"],
                 400
             )
@@ -313,16 +310,13 @@ export class QuestionService {
             decrypteCursor ? decrypteCursor['cursorId'] : undefined
         );
 
-        const test = await this.questionRepo.test(
-            take,
-            userId,
-            previousMidnight,
-            nextMidnight,
-            decrypteCursor ? decrypteCursor['cursorId'] : undefined
-        );
-
-        console.log(test);
-        
+        if(questionList.length === 0) {
+            throw new CustomException(
+                "풀 수 있는 문제 미존재",
+                ECustomExceptionCode["QUESTION-005"],
+                400
+            )
+        };
 
         const isNextCursor = questionList.length > 0 ? questionList[questionList.length - 1].questionId : null;
 

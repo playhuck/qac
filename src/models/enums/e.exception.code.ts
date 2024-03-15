@@ -11,6 +11,7 @@ export enum ECustomExceptionCode {
   /** 문제를 찾을 수 없음 */ 'QUESTION-002' = 'QUESTION-002',
   /** 특정 문제 별 일일 이용한도 초과 */ 'QUESTION-003' = 'QUESTION-003',
   /** 문제 오답 */ 'QUESTION-004' = 'QUESTION-004',
+  /** 풀 수 있는 문제 미존재 */ 'QUESTION-005' = 'QUESTION-005',
   
   /** 특정 MID 별 일일 이용한도 초과 */ 'MID-001' = 'MID-001',
   /** 특정 MID 별 3시간 별 이용한도 초과 */ 'MID-002' = 'MID-002',

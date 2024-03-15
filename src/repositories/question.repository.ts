@@ -10,7 +10,7 @@ import { QuestionEntity } from "@entities/question.entity";
 import { QuestionMidEntity } from "@entities/question.mid.entity";
 import { QuestionUserListEntity } from "@entities/question.user.list.entity";
 import { QueryCursorQuestionDto } from "@dtos/questions/query.cursor.question.dto";
-import { TQuestion } from "@models/types/t.question";
+import { TQuestion, TQuestionLastAnswered, TQuestionQuantityLimit } from "@models/types/t.question";
 
 @Injectable()
 export class QuestionRepository {
@@ -56,7 +56,7 @@ export class QuestionRepository {
             select: {
                 questionId: true
             }
-        });
+        }) as TQuestionQuantityLimit;
 
         return quantityLimit;
     }
@@ -79,7 +79,7 @@ export class QuestionRepository {
                 DATE_ADD(STR_TO_DATE(qu.created_at, '%Y-%m-%d %H:%i:%s'), INTERVAL 9 HOUR) < STR_TO_DATE(:nextMidnight, '%Y-%m-%d %H:%i:%s')
             `, { previousMidnight, nextMidnight }).
             andWhere(`qu.question_type =:type`, { type: 'allDayOnce' }).
-            getRawMany();
+            getRawMany() as TQuestionQuantityLimit;
 
         return result;
 
@@ -92,6 +92,10 @@ export class QuestionRepository {
     ){
 
         const result = await entityManager.find(QuestionUserListEntity, {
+            select: {
+                createdAt: true,
+                questionId: true
+            },
             where: {
                 questionMid,
                 userId,
@@ -101,7 +105,7 @@ export class QuestionRepository {
             order: {
                 'createdAt': 'DESC'
             }
-        });
+        }) as TQuestionLastAnswered;
 
         return result;
     };
@@ -148,57 +152,6 @@ export class QuestionRepository {
     };
 
     async getCursorQuestionList(
-        take: number,
-        userId: number,
-        previousMidnight: string,
-        nextMidnight: string,
-        cursorId?: number
-    ) {
-
-        // const result = await this.questionRepo.find({
-        //     take,
-        //     where: cursorId ? {
-        //         questionId: MoreThan(cursorId)
-        //     } : null as unknown as FindOptionsWhere<QuestionEntity>,
-        //     order: {
-        //         questionId: 'ASC'
-        //     }
-        // });
-
-        const result = await this.questionRepo.query(
-            `SELECT q.question_id
-                FROM question AS q
-                LEFT JOIN (
-                    SELECT question_mid AS qMid
-                    FROM question_user_list
-                    WHERE user_id = ?
-                        AND (
-                            (STR_TO_DATE(created_at, '%Y-%m-%d %H:%i:%s') > STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s')
-                            AND STR_TO_DATE(created_at, '%Y-%m-%d %H:%i:%s') < STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s'))
-                            OR (DATE_ADD(STR_TO_DATE(created_at, '%Y-%m-%d %H:%i:%s'), INTERVAL 3 HOUR) < DATE_ADD(NOW(), INTERVAL 3 HOUR))
-                        )
-                    GROUP BY question_mid
-                ) AS qu ON q.mid = qu.qMid
-                WHERE q.type IN ('allDayOnce', 'threeHourOnce', 'onlyOnce')
-                    AND (
-                        (q.type = 'allDayOnce' AND qu.qMid IS NULL)
-                        OR (q.type = 'threeHourOnce' AND (qu.qMid IS NULL OR q.mid != qu.qMid))
-                        OR q.type = 'onlyOnce'
-                    )
-                    AND q.question_id > ?
-                GROUP BY q.question_id
-                ORDER BY q.question_id ASC
-                LIMIT ?;`, [userId, previousMidnight, nextMidnight, cursorId, take]
-        );
-
-        // console.log(result);
-        
-
-        return result
-
-    }
-
-    async test(
         take: number,
         userId: number,
         previousMidnight: string,

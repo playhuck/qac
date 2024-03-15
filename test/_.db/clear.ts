@@ -1,3 +1,4 @@
+import { OkPacket, RowDataPacket, ResultSetHeader, ProcedureCallPacket } from "mysql2";
 import { conn } from "./conn"
 
 async function clearDb() {
@@ -7,7 +8,7 @@ async function clearDb() {
     try {
 
         const [tablesRows] = await connection.promise().query('SHOW TABLES');
-        const rows = tablesRows as Array<any>;
+        const rows = tablesRows as Array<RowDataPacket[] | ResultSetHeader[] | RowDataPacket[][] | OkPacket[] | ProcedureCallPacket>;
         const tables = rows.map((row: any) => Object.values(row)[0]);
 
         for (const table of tables) {

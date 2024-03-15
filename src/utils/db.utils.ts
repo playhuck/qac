@@ -11,11 +11,11 @@ export class DbUtils {
     ) { }
 
     async transaction<T, U>(f: ServiceLogicFunction<T, U>, args : U) {
-
+        
         try {
             const queryRunner = this.dataSource.createQueryRunner();
             const manager = queryRunner.manager;
-
+            
             try {
 
                 await queryRunner.connect();
