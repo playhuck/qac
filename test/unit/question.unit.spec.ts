@@ -120,9 +120,6 @@ describe('Question Unit Test', () => {
         it(`특정 문제 일일 한도 초과:${ECustomExceptionCode['QUESTION-003']}`, async()=> {
 
             const questionIdSpyOn = jest.spyOn(questionRepo, 'getQuestionById').mockResolvedValue(mockQuestion);
-            const getQuestionQuantityLimitSpyOn = jest.spyOn(questionRepo, 'getQuestionQuantityLimit').mockResolvedValue(
-                [{}, {}, {}] as TQuestionQuantityLimit
-            );
 
             try {
 
@@ -138,17 +135,14 @@ describe('Question Unit Test', () => {
             };
 
             expect(questionIdSpyOn).toHaveBeenCalledTimes(1);
-            expect(getQuestionQuantityLimitSpyOn).toHaveBeenCalledTimes(1);
 
         });
 
         it(`특정 MID 별 일일 이용한도 초과:${ECustomExceptionCode['MID-001']}`, async()=> {
 
+            mockQuestion.questionTake = 2;
             mockQuestion.questionType = 'allDayOnce';
             const questionIdSpyOn = jest.spyOn(questionRepo, 'getQuestionById').mockResolvedValue(mockQuestion);
-            const getQuestionQuantityLimitSpyOn = jest.spyOn(questionRepo, 'getQuestionQuantityLimit').mockResolvedValue(
-                [{}, {}] as TQuestionQuantityLimit
-            );
             const getAllDayOnceByMidSpyOn = jest.spyOn(questionRepo, 'getAllDayOnceByMid').mockResolvedValue([{}] as TQuestionQuantityLimit)
 
             try {
@@ -165,7 +159,6 @@ describe('Question Unit Test', () => {
             };
 
             expect(questionIdSpyOn).toHaveBeenCalledTimes(1);
-            expect(getQuestionQuantityLimitSpyOn).toHaveBeenCalledTimes(1);
             expect(getAllDayOnceByMidSpyOn).toHaveBeenCalledTimes(1);
 
         });
@@ -174,9 +167,6 @@ describe('Question Unit Test', () => {
 
             mockQuestion.questionType = 'threeHourOnce';
             const questionIdSpyOn = jest.spyOn(questionRepo, 'getQuestionById').mockResolvedValue(mockQuestion);
-            const getQuestionQuantityLimitSpyOn = jest.spyOn(questionRepo, 'getQuestionQuantityLimit').mockResolvedValue(
-                [{}, {}] as TQuestionQuantityLimit
-            );
             const getLastAnsweredMidSpyOn = jest.spyOn(questionRepo, 'getLastAnsweredMid').mockResolvedValue([{
                 questionId: 0,
                 createdAt: dayjs.addTime(createdAt, -2, 'hour', 'YYYY-MM-DD HH:mm:ss')
@@ -196,7 +186,6 @@ describe('Question Unit Test', () => {
             };
 
             expect(questionIdSpyOn).toHaveBeenCalledTimes(1);
-            expect(getQuestionQuantityLimitSpyOn).toHaveBeenCalledTimes(1);
             expect(getLastAnsweredMidSpyOn).toHaveBeenCalledTimes(1);
 
         });
@@ -205,9 +194,6 @@ describe('Question Unit Test', () => {
 
             mockQuestion.questionType = 'threeHourOnce';
             const questionIdSpyOn = jest.spyOn(questionRepo, 'getQuestionById').mockResolvedValue(mockQuestion);
-            const getQuestionQuantityLimitSpyOn = jest.spyOn(questionRepo, 'getQuestionQuantityLimit').mockResolvedValue(
-                [{}, {}] as TQuestionQuantityLimit
-            );
             const getLastAnsweredMidSpyOn = jest.spyOn(questionRepo, 'getLastAnsweredMid').mockResolvedValue([{
                 questionId: 0,
                 createdAt: dayjs.addTime(createdAt, -2, 'hour', 'YYYY-MM-DD HH:mm:ss')
@@ -227,7 +213,6 @@ describe('Question Unit Test', () => {
             };
 
             expect(questionIdSpyOn).toHaveBeenCalledTimes(1);
-            expect(getQuestionQuantityLimitSpyOn).toHaveBeenCalledTimes(1);
             expect(getLastAnsweredMidSpyOn).toHaveBeenCalledTimes(1);
 
         });
@@ -236,9 +221,6 @@ describe('Question Unit Test', () => {
 
             mockQuestion.questionType = 'onlyOnce';
             const questionIdSpyOn = jest.spyOn(questionRepo, 'getQuestionById').mockResolvedValue(mockQuestion);
-            const getQuestionQuantityLimitSpyOn = jest.spyOn(questionRepo, 'getQuestionQuantityLimit').mockResolvedValue(
-                [{}, {}] as TQuestionQuantityLimit
-            );
             const getOnlyOnceByMidSpyOn = jest.spyOn(questionRepo, 'getOnlyOnceByMid').mockResolvedValue({} as QuestionUserListEntity);
 
             try {
@@ -255,7 +237,32 @@ describe('Question Unit Test', () => {
             };
 
             expect(questionIdSpyOn).toHaveBeenCalledTimes(1);
-            expect(getQuestionQuantityLimitSpyOn).toHaveBeenCalledTimes(1);
+            expect(getOnlyOnceByMidSpyOn).toHaveBeenCalledTimes(1);
+
+        });
+
+        it(`특정 MID 별 한 달 이용한도 초과:${ECustomExceptionCode['MID-004']}`, async()=> {
+
+            mockQuestion.questionType = 'montlyOnce';
+            const questionIdSpyOn = jest.spyOn(questionRepo, 'getQuestionById').mockResolvedValue(mockQuestion);
+            const getOnlyOnceByMidSpyOn = jest.spyOn(questionRepo, 'getMonthlyOnceByMid').mockResolvedValue([{
+                createdAt: dayjs.addTime(createdAt, 4, 'week', 'YYYY-MM-DD HH:mm:ss')
+            }] as TQuestionLastAnswered);
+
+            try {
+
+                await service.postAnswerQuestion(userId, body, param); 
+
+            } catch (e) {
+                
+                if (e instanceof CustomException) expect(e['message']).toBe('특정 MID 별 한 달 이용한도 초과');
+                if (e instanceof CustomException) expect(e['errorCode']).toBe(ECustomExceptionCode['MID-004']);
+                if (e instanceof CustomException) expect(e['statusCode']).toBe(400);
+                else if(e instanceof Error) expect(e['message']).toBe(ECustomExceptionCode['UNKNOWN-SERVER-ERROR']);
+
+            };
+
+            expect(questionIdSpyOn).toHaveBeenCalledTimes(1);
             expect(getOnlyOnceByMidSpyOn).toHaveBeenCalledTimes(1);
 
         });
@@ -264,9 +271,6 @@ describe('Question Unit Test', () => {
 
             mockQuestion.questionType = 'onlyOnce';
             const questionIdSpyOn = jest.spyOn(questionRepo, 'getQuestionById').mockResolvedValue(mockQuestion);
-            const getQuestionQuantityLimitSpyOn = jest.spyOn(questionRepo, 'getQuestionQuantityLimit').mockResolvedValue(
-                [{}, {}] as TQuestionQuantityLimit
-            );
             const getOnlyOnceByMidSpyOn = jest.spyOn(questionRepo, 'getOnlyOnceByMid').mockResolvedValue(null);
             const insertQusetionUserSpyOn = jest.spyOn(questionRepo, 'insertQusetionUser').mockResolvedValue({affectedRows: 0} as ResultSetHeader);
 
@@ -284,9 +288,36 @@ describe('Question Unit Test', () => {
             };
 
             expect(questionIdSpyOn).toHaveBeenCalledTimes(1);
-            expect(getQuestionQuantityLimitSpyOn).toHaveBeenCalledTimes(1);
             expect(getOnlyOnceByMidSpyOn).toHaveBeenCalledTimes(1);
             expect(insertQusetionUserSpyOn).toHaveBeenCalledTimes(1);
+
+        });
+
+        it(`문제 Take 반영 실패:${ECustomExceptionCode['AWS-RDS-EXCEPTION']}`, async()=> {
+
+            mockQuestion.questionType = 'onlyOnce';
+            const questionIdSpyOn = jest.spyOn(questionRepo, 'getQuestionById').mockResolvedValue(mockQuestion);
+            const getOnlyOnceByMidSpyOn = jest.spyOn(questionRepo, 'getOnlyOnceByMid').mockResolvedValue(null);
+            const insertQusetionUserSpyOn = jest.spyOn(questionRepo, 'insertQusetionUser').mockResolvedValue({affectedRows: 1} as ResultSetHeader);
+            const updateQuestionTakeSpyOn = jest.spyOn(questionRepo, 'updateQuestionTake').mockResolvedValue({ affected : 0 } as UpdateResult);
+
+            try {
+
+                await service.postAnswerQuestion(userId, body, param); 
+
+            } catch (e) {
+                
+                if (e instanceof CustomException) expect(e['message']).toBe('문제 Take 반영 실패');
+                if (e instanceof CustomException) expect(e['errorCode']).toBe(ECustomExceptionCode['AWS-RDS-EXCEPTION']);
+                if (e instanceof CustomException) expect(e['statusCode']).toBe(500);
+                else if(e instanceof Error) expect(e['message']).toBe(ECustomExceptionCode['UNKNOWN-SERVER-ERROR']);
+
+            };
+
+            expect(questionIdSpyOn).toHaveBeenCalledTimes(1);
+            expect(getOnlyOnceByMidSpyOn).toHaveBeenCalledTimes(1);
+            expect(insertQusetionUserSpyOn).toHaveBeenCalledTimes(1);
+            expect(updateQuestionTakeSpyOn).toHaveBeenCalledTimes(1);
 
         });
 
@@ -294,11 +325,9 @@ describe('Question Unit Test', () => {
 
             mockQuestion.questionType = 'onlyOnce';
             const questionIdSpyOn = jest.spyOn(questionRepo, 'getQuestionById').mockResolvedValue(mockQuestion);
-            const getQuestionQuantityLimitSpyOn = jest.spyOn(questionRepo, 'getQuestionQuantityLimit').mockResolvedValue(
-                [{}, {}] as TQuestionQuantityLimit
-            );
             const getOnlyOnceByMidSpyOn = jest.spyOn(questionRepo, 'getOnlyOnceByMid').mockResolvedValue(null);
             const insertQusetionUserSpyOn = jest.spyOn(questionRepo, 'insertQusetionUser').mockResolvedValue({affectedRows: 1} as ResultSetHeader);
+            const updateQuestionTakeSpyOn = jest.spyOn(questionRepo, 'updateQuestionTake').mockResolvedValue({ affected : 1 } as UpdateResult);
             const updateUserCashSpyOn = jest.spyOn(userRepo, 'updateUserCash').mockResolvedValue({ affected : 0 } as UpdateResult);
 
             try {
@@ -315,7 +344,6 @@ describe('Question Unit Test', () => {
             };
 
             expect(questionIdSpyOn).toHaveBeenCalledTimes(1);
-            expect(getQuestionQuantityLimitSpyOn).toHaveBeenCalledTimes(1);
             expect(getOnlyOnceByMidSpyOn).toHaveBeenCalledTimes(1);
             expect(insertQusetionUserSpyOn).toHaveBeenCalledTimes(1);
             expect(updateUserCashSpyOn).toHaveBeenCalledTimes(1);

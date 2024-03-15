@@ -45,6 +45,14 @@ export class QuestionEntity extends CustomBaseEntity {
     questionQuantity!: number; // 질문의 하루 최대 유저가 응시할 수 있는 양
 
     @Column({
+        name: 'take',
+        type: 'int',
+        nullable: false,
+        default: 0
+    })
+    questionTake!: number; // 질문의 하루 최대 유저가 응시할 수 있는 양
+
+    @Column({
         name: 'type',
         type: 'varchar',
         length: '64',

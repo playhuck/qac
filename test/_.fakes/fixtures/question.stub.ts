@@ -36,6 +36,7 @@ export class QuestionStub {
             questionId: 0,
             questionMid: 'mid',
             questionQuantity: 3,
+            questionTake: 3,
             questionTitle: 'question',
             questionType,
             questionUserList: [],

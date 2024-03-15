@@ -4,7 +4,7 @@ import { QuestionEntity } from "@entities/question.entity";
 import { QuestionUserListEntity } from "@entities/question.user.list.entity";
 import { EntityManager } from "typeorm";
 
-type TQuestion = 'allDayOnce' | 'threeHourOnce' | 'onlyOnce';
+type TQuestion = 'allDayOnce' | 'threeHourOnce' | 'onlyOnce' | 'montlyOnce';
 
 type TQuestionTypeFunction = ((
     entityManager: EntityManager,

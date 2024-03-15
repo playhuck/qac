@@ -16,6 +16,7 @@ export enum ECustomExceptionCode {
   /** 특정 MID 별 일일 이용한도 초과 */ 'MID-001' = 'MID-001',
   /** 특정 MID 별 3시간 별 이용한도 초과 */ 'MID-002' = 'MID-002',
   /** 특정 MID 별 전체 이용한도 초과 */ 'MID-003' = 'MID-003',
+  /** 특정 MID 별 한 달 이용한도 초과 */ 'MID-004' = 'MID-004',
 
   /** 비밀번호 불일치 */ 'INCORECT-PWD' = 'INCORECT-PWD',
   /** DB 비밀번호 불일치 */ 'INCORECT-DB-PWD' = 'INCORECT-DB-PWD',

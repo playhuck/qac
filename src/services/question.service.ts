@@ -47,7 +47,8 @@ export class QuestionService {
         this.typeFunction = {
             'allDayOnce': this.allDayOnceQuestion.bind(this),
             'threeHourOnce': this.threeHourOnceQuestion.bind(this),
-            'onlyOnce': this.onlyOnceQuestion.bind(this)
+            'onlyOnce': this.onlyOnceQuestion.bind(this),
+            'montlyOnce': this.monthlyOnceQuestion.bind(this)
         }
     }
 
@@ -105,7 +106,7 @@ export class QuestionService {
         body: PostAnswerQuestionDto,
         param: ParamQuestionDto
     ) {
-        
+
         await this.db.transaction(
             async (entityManager: EntityManager, args) => {
 
@@ -127,14 +128,11 @@ export class QuestionService {
                     questionQuantity,
                     questionAnswer: originAnswer,
                     questionCash,
-                    questionMid
+                    questionMid,
+                    questionTake
                 } = question;
 
-                const questionQuantityLimit = await this.questionRepo.getQuestionQuantityLimit(
-                    entityManager,
-                    questionId
-                );
-                if (questionQuantityLimit.length >= questionQuantity) {
+                if (questionTake >= questionQuantity) {
                     throw new CustomException(
                         "특정 문제 별 일일 이용한도 초과",
                         ECustomExceptionCode["QUESTION-003"],
@@ -170,6 +168,20 @@ export class QuestionService {
                 const user = await this.userRepo.getEmUserById(entityManager, userId);
 
                 const calCash = user!.cash += questionCash;
+
+                const updateQuestionTake = await this.questionRepo.updateQuestionTake(
+                    entityManager,
+                    questionId,
+                    questionTake + 1
+                );
+
+                if (updateQuestionTake.affected !== 1) {
+                    throw new CustomException(
+                        "문제 Take 반영 실패",
+                        ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                        500
+                    );
+                }
 
                 const updateUserCash = await this.userRepo.updateUserCash(
                     entityManager,
@@ -261,9 +273,35 @@ export class QuestionService {
                 "특정 MID 별 전체 이용한도 초과",
                 ECustomExceptionCode["MID-003"],
                 400
-            )
-        }
+            );
+        };
     };
+
+    async monthlyOnceQuestion(
+        entityManager: EntityManager,
+        userId: number,
+        questionMid: string
+    ) {
+
+        const getMontlyOnceMid = await this.questionRepo.getMonthlyOnceByMid(
+            entityManager,
+            userId,
+            questionMid
+        );
+
+        if (getMontlyOnceMid.length > 0) {
+
+            const montlyDiff = this.dayjs.getDifftime(getMontlyOnceMid[0].createdAt, 'months');
+            
+            if (montlyDiff > -1) {
+                throw new CustomException(
+                    "특정 MID 별 한 달 이용한도 초과",
+                    ECustomExceptionCode["MID-004"],
+                    400
+                );
+            }
+        }
+    }
 
     async getOffsetQuestionList(
         query: QueryQuestionDto
@@ -310,7 +348,7 @@ export class QuestionService {
             decrypteCursor ? decrypteCursor['cursorId'] : undefined
         );
 
-        if(questionList.length === 0) {
+        if (questionList.length === 0) {
             throw new CustomException(
                 "풀 수 있는 문제 미존재",
                 ECustomExceptionCode["QUESTION-005"],
